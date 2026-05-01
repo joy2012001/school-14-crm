@@ -222,20 +222,31 @@ async function handleSendMagicLink(event) {
   event.preventDefault();
   const email = document.getElementById("loginEmail").value.trim().toLowerCase();
   if (!email) return;
-  const settings = { url: window.location.origin + window.location.pathname, handleCodeInApp: true };
-  await auth.sendSignInLinkToEmail(email, settings);
-  localStorage.setItem("emailForSignIn", email);
-  toast("Код-вход отправлен на email.");
+  try {
+    const settings = { url: window.location.origin + window.location.pathname, handleCodeInApp: true };
+    await auth.sendSignInLinkToEmail(email, settings);
+    localStorage.setItem("emailForSignIn", email);
+    toast("Код-вход отправлен на email.");
+  } catch (error) {
+    console.error("Magic link send error:", error);
+    toast(getAuthErrorMessage(error));
+  }
 }
 
 async function tryCompleteMagicLinkSignIn() {
   if (!auth.isSignInWithEmailLink(window.location.href)) return;
-  let email = localStorage.getItem("emailForSignIn");
-  if (!email) email = window.prompt("Введите email для подтверждения входа:");
-  if (!email) return;
-  await auth.signInWithEmailLink(email, window.location.href);
-  localStorage.removeItem("emailForSignIn");
-  window.history.replaceState({}, document.title, window.location.pathname);
+  try {
+    let email = localStorage.getItem("emailForSignIn");
+    if (!email) email = window.prompt("Введите email для подтверждения входа:");
+    if (!email) return;
+    await auth.signInWithEmailLink(email, window.location.href);
+    localStorage.removeItem("emailForSignIn");
+    window.history.replaceState({}, document.title, window.location.pathname);
+    toast("Вход выполнен успешно.");
+  } catch (error) {
+    console.error("Magic link sign-in error:", error);
+    toast(getAuthErrorMessage(error));
+  }
 }
 
 async function ensureUserProfile(user) {
@@ -753,6 +764,26 @@ function toast(message) {
   const el = document.getElementById("appToast");
   document.getElementById("appToastMessage").textContent = message;
   bootstrap.Toast.getOrCreateInstance(el).show();
+}
+
+function getAuthErrorMessage(error) {
+  const code = error?.code || "";
+  if (code.includes("unauthorized-continue-uri")) {
+    return "Домен не разрешен в Firebase Auth. Добавьте домен Netlify в Authorized domains.";
+  }
+  if (code.includes("invalid-continue-uri")) {
+    return "Ошибка ссылки входа. Проверьте URL сайта в настройках Firebase.";
+  }
+  if (code.includes("operation-not-allowed")) {
+    return "В Firebase не включен Email Link Sign-in.";
+  }
+  if (code.includes("invalid-email")) {
+    return "Некорректный email.";
+  }
+  if (code.includes("network-request-failed")) {
+    return "Сетевая ошибка. Проверьте интернет и повторите.";
+  }
+  return `Ошибка входа: ${error?.message || "неизвестная ошибка"}`;
 }
 
 window.openClassModal = openClassModal;
