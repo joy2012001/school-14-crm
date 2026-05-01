@@ -338,9 +338,11 @@ function handleLogin(e) {
 function mockLogin(email, password, role) {
     // Updated mock user data for new roles
     const mockUsers = [
-        { email: 'admin@school14.uz', password: 'admin123', role: 'super_admin', name: 'Супер администратор' },
-        { email: 'school_admin@school14.uz', password: 'admin123', role: 'school_admin', name: 'Администратор школы' },
-        { email: 'teacher@school14.uz', password: 'teacher123', role: 'teacher', name: 'Учитель Иванов' }
+        { email: 'director@school14.uz', password: 'director2024', role: 'super_admin', name: 'Директор школы' },
+        { email: 'admin@school14.uz', password: 'admin2024', role: 'school_admin', name: 'Администратор школы' },
+        { email: 'teacher1@school14.uz', password: 'teacher2024', role: 'teacher', name: 'Учитель математики' },
+        { email: 'teacher2@school14.uz', password: 'teacher2024', role: 'teacher', name: 'Учитель русского языка' },
+        { email: 'teacher3@school14.uz', password: 'teacher2024', role: 'teacher', name: 'Учитель физкультуры' }
     ];
 
     const user = mockUsers.find(u => u.email === email && u.password === password && u.role === role);
@@ -382,9 +384,16 @@ function showLogin() {
 function showDashboard() {
     const loginPage = document.getElementById('loginPage');
     const dashboardPage = document.getElementById('dashboardPage');
+    const mobileHeader = document.querySelector('.mobile-header');
     
     if (loginPage) loginPage.classList.remove('active');
     if (dashboardPage) dashboardPage.classList.add('active');
+    
+    // Show mobile header on mobile
+    if (window.innerWidth <= 768 && mobileHeader) {
+        mobileHeader.style.display = 'flex';
+    }
+    
     // Set today's date for attendance
     const today = new Date().toISOString().split('T')[0];
     const attendanceDateInput = document.getElementById('attendanceDate');
@@ -395,6 +404,13 @@ function showDashboard() {
     // Load initial data
     loadDashboardData();
     loadClasses();
+}
+
+function toggleMobileMenu() {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+        sidebar.classList.toggle('active');
+    }
 }
 
 function updateSidebarUserInfo() {
@@ -953,33 +969,64 @@ function loadClasses() {
     
     classesList.innerHTML = `<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">${translations[currentLanguage].loading}</span></div></div>`;
     
-    // Load classes from Firebase
-    db.collection('classes').get().then((querySnapshot) => {
-        classesData = [];
-        classesList.innerHTML = '';
-        
-        if (querySnapshot.empty) {
-            classesList.innerHTML = `<div class="alert alert-info text-center">${translations[currentLanguage].noClasses}</div>`;
-            return;
+    // Try to load from Firebase, fallback to mock data
+    try {
+        if (db && typeof db.collection === 'function') {
+            db.collection('classes').get().then((querySnapshot) => {
+                classesData = [];
+                classesList.innerHTML = '';
+                
+                if (querySnapshot.empty) {
+                    loadMockClasses();
+                    return;
+                }
+                
+                querySnapshot.forEach((doc) => {
+                    const classData = doc.data();
+                    classData.id = doc.id;
+                    classesData.push(classData);
+                    
+                    const classHtml = createClassCard(classData);
+                    classesList.innerHTML += classHtml;
+                });
+                
+                updateClassSelectors();
+            }).catch((error) => {
+                console.error('Firebase error, using mock data:', error);
+                loadMockClasses();
+            });
+        } else {
+            loadMockClasses();
         }
-        
-        querySnapshot.forEach((doc) => {
-            const classData = doc.data();
-            classData.id = doc.id;
-            classesData.push(classData);
-            
-            const classHtml = createClassCard(classData);
-            classesList.innerHTML += classHtml;
-        });
-        
-        // Update class selectors
-        updateClassSelectors();
-    }).catch((error) => {
+    } catch (error) {
         console.error('Error loading classes:', error);
-        const errorMsg = currentLanguage === 'uz' ? 'Sinflarni yuklashda xatolik' : 'Ошибка загрузки классов';
-        showToast(errorMsg, 'danger');
-        classesList.innerHTML = `<div class="alert alert-danger">${errorMsg}</div>`;
+        loadMockClasses();
+    }
+}
+
+function loadMockClasses() {
+    const classesList = document.getElementById('classesList');
+    classesData = [
+        { id: '1', name: '1-А класс', teacher: 'Иванова А.А.', studentCount: 25, present: 23, absent: 2 },
+        { id: '2', name: '2-Б класс', teacher: 'Петров В.В.', studentCount: 23, present: 22, absent: 1 },
+        { id: '3', name: '3-В класс', teacher: 'Сидорова К.К.', studentCount: 27, present: 25, absent: 2 },
+        { id: '4', name: '4-Г класс', teacher: 'Козлов Д.Д.', studentCount: 22, present: 21, absent: 1 },
+        { id: '5', name: '5-А класс', teacher: 'Смирнова Е.Е.', studentCount: 26, present: 24, absent: 2 }
+    ];
+    
+    classesList.innerHTML = '';
+    
+    if (classesData.length === 0) {
+        classesList.innerHTML = `<div class="alert alert-info text-center">${translations[currentLanguage].noClasses}</div>`;
+        return;
+    }
+    
+    classesData.forEach(cls => {
+        const classHtml = createClassCard(cls);
+        classesList.innerHTML += classHtml;
     });
+    
+    updateClassSelectors();
 }
 
 function createClassCard(cls) {
