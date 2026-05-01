@@ -42,10 +42,28 @@ body {
 .page {
     display: none;
     min-height: 100vh;
+    position: relative;
+    z-index: 1;
     
     &.active {
         display: block;
     }
+}
+
+// Ensure login page is on top
+#loginPage {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+#dashboardPage {
+    position: relative;
+    z-index: 1;
 }
 
 // Modern Login Page

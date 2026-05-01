@@ -372,20 +372,19 @@ function logout() {
 
 // Page navigation functions
 function showLogin() {
-    document.getElementById('loginPage').classList.add('active');
-    document.getElementById('dashboardPage').classList.remove('active');
+    const loginPage = document.getElementById('loginPage');
+    const dashboardPage = document.getElementById('dashboardPage');
+    
+    if (loginPage) loginPage.classList.add('active');
+    if (dashboardPage) dashboardPage.classList.remove('active');
 }
 
 function showDashboard() {
-    document.getElementById('loginPage').classList.remove('active');
-    document.getElementById('dashboardPage').classList.add('active');
-
-    // Update sidebar user info
-    updateSidebarUserInfo();
+    const loginPage = document.getElementById('loginPage');
+    const dashboardPage = document.getElementById('dashboardPage');
     
-    // Apply role-based permissions
-    applyRolePermissions();
-    
+    if (loginPage) loginPage.classList.remove('active');
+    if (dashboardPage) dashboardPage.classList.add('active');
     // Set today's date for attendance
     const today = new Date().toISOString().split('T')[0];
     const attendanceDateInput = document.getElementById('attendanceDate');
@@ -943,6 +942,8 @@ function loadClasses() {
     const classesList = document.getElementById('classesList');
     const addClassBtn = document.getElementById('addClassBtn');
     
+    if (!classesList) return;
+    
     // Show/hide add class button based on permissions
     if (currentUser && (currentUser.role === 'school_admin' || currentUser.role === 'super_admin')) {
         addClassBtn.style.display = 'inline-flex';
@@ -975,8 +976,9 @@ function loadClasses() {
         updateClassSelectors();
     }).catch((error) => {
         console.error('Error loading classes:', error);
-        showToast(translations[currentLanguage].errorLoading, 'danger');
-        classesList.innerHTML = '<div class="alert alert-danger">Ошибка загрузки классов</div>';
+        const errorMsg = currentLanguage === 'uz' ? 'Sinflarni yuklashda xatolik' : 'Ошибка загрузки классов';
+        showToast(errorMsg, 'danger');
+        classesList.innerHTML = `<div class="alert alert-danger">${errorMsg}</div>`;
     });
 }
 
