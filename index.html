@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>14-мактаб CRM - Давомат тизими</title>
+    <link rel="icon" type="image" href="./favicon.png">
+    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="node_modules/bootstrap-icons/font/bootstrap-icons.css">
+</head>
+
+<body>
+    <!-- Login Page -->
+    <div id="loginPage" class="page active">
+        <div class="login-container">
+            <div class="login-card">
+                <img src="Logo.jpg" alt="Logo" class="login-logo">
+                <h2 data-lang="title">14-мактаб CRM тизими</h2>
+                <p data-lang="subtitle">Давоматни кузатув тизими</p>
+                
+                <form id="loginForm">
+                    <div class="mb-3">
+                        <label for="email" class="form-label" data-lang="email">Электрон почта</label>
+                        <input type="email" class="form-control" id="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label" data-lang="password">Пароль</label>
+                        <input type="password" class="form-control" id="password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="role" class="form-label" data-lang="role">Роль</label>
+                        <select class="form-select" id="role">
+                            <option value="teacher" data-lang="teacher">Устоз</option>
+                            <option value="admin" data-lang="admin">Администратор</option>
+                            <option value="director" data-lang="director">Директор</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100" data-lang="login">Кириш</button>
+                </form>
+                
+                <div class="language-switch mt-3">
+                    <button class="btn btn-outline-secondary btn-sm" onclick="setLanguage('ru')">Русский</button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="setLanguage('uz')">O'zbek</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="dashboardPage" class="page">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">
+                    <img src="Logo.jpg" alt="Logo" class="navbar-logo">
+                    <span data-lang="title">14-мактаб CRM</span>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showTab('dashboard')">
+                                <i class="bi bi-house"></i> <span data-lang="dashboard">Бош саҳифа</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showTab('attendance')">
+                                <i class="bi bi-check-square"></i> <span data-lang="attendance">Давомат</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showTab('classes')">
+                                <i class="bi bi-people"></i> <span data-lang="classes">Синфлар</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showTab('reports')">
+                                <i class="bi bi-graph-up"></i> <span data-lang="reports">Хисоботлар</span>
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-gear"></i> <span data-lang="settings">Созламалар</span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#" onclick="showTab('import')">
+                                    <i class="bi bi-upload"></i> <span data-lang="import">Импорт</span>
+                                </a></li>
+                                <li><a class="dropdown-item" href="#" onclick="showTab('admin')" id="adminLink" style="display:none;">
+                                    <i class="bi bi-shield-lock"></i> <span data-lang="adminPanel">Админ панель</span>
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" onclick="logout()">
+                                    <i class="bi bi-box-arrow-right"></i> <span data-lang="logout">Чиқиш</span>
+                                </a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container-fluid mt-4">
+            <!-- Dashboard Tab -->
+            <div id="dashboardTab" class="tab-content active">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="bi bi-people-fill"></i></h5>
+                                <h3 id="totalStudents">0</h3>
+                                <p data-lang="totalStudents">Жами ўқувчилар</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="bi bi-check-circle-fill"></i></h5>
+                                <h3 id="presentToday">0</h3>
+                                <p data-lang="presentToday">Бугун келганлар</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-danger text-white">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="bi bi-x-circle-fill"></i></h5>
+                                <h3 id="absentToday">0</h3>
+                                <p data-lang="absentToday">Бугун келмаганлар</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="bi bi-percent"></i></h5>
+                                <h3 id="attendanceRate">0%</h3>
+                                <p data-lang="attendanceRate">Давомат даражаси</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 data-lang="recentActivity">Сўнгги фаолият</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="recentActivityList">
+                                    <!-- Activity items will be added here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance Tab -->
+            <div id="attendanceTab" class="tab-content">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 data-lang="markAttendance">Давоматни белгилаш</h5>
+                        <div>
+                            <select class="form-select d-inline-block w-auto" id="classSelect">
+                                <option value="" data-lang="selectClass">Синфни танланг</option>
+                            </select>
+                            <button class="btn btn-primary ms-2" onclick="loadStudents()">
+                                <i class="bi bi-arrow-clockwise"></i> <span data-lang="refresh">Янгилаш</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="studentsList">
+                            <!-- Students list will be loaded here -->
+                        </div>
+                        <div class="mt-3">
+                            <button class="btn btn-success" onclick="saveAttendance()">
+                                <i class="bi bi-check-circle"></i> <span data-lang="saveAttendance">Давоматни сақлаш</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Classes Tab -->
+            <div id="classesTab" class="tab-content">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 data-lang="classList">Синфлар рўйхати</h5>
+                        <button class="btn btn-primary" onclick="showAddClassModal()">
+                            <i class="bi bi-plus-circle"></i> <span data-lang="addClass">Синф қўшиш</span>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="classesList">
+                            <!-- Classes will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Tab -->
+            <div id="reportsTab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 data-lang="attendanceReports">Давомат хисоботлари</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <label data-lang="fromDate">Дан</label>
+                                <input type="date" class="form-control" id="fromDate">
+                            </div>
+                            <div class="col-md-3">
+                                <label data-lang="toDate">Гача</label>
+                                <input type="date" class="form-control" id="toDate">
+                            </div>
+                            <div class="col-md-3">
+                                <label data-lang="selectClass">Синф</label>
+                                <select class="form-select" id="reportClassSelect">
+                                    <option value="">Барчаси</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label>&nbsp;</label>
+                                <button class="btn btn-primary w-100" onclick="generateReport()">
+                                    <i class="bi bi-file-text"></i> <span data-lang="generateReport">Хисобот яратиш</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="reportResults">
+                            <!-- Report results will be shown here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Import Tab -->
+            <div id="importTab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 data-lang="importStudents">Ўқувчиларни импорт қилиш</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="classImport" class="form-label" data-lang="selectClass">Синфни танланг</label>
+                            <select class="form-select" id="classImport">
+                                <option value="">Синфни танланг</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="excelFile" class="form-label" data-lang="selectFile">Excel файлни танланг</label>
+                            <input type="file" class="form-control" id="excelFile" accept=".xlsx,.xls">
+                        </div>
+                        <button class="btn btn-primary" onclick="importStudents()">
+                            <i class="bi bi-upload"></i> <span data-lang="import">Импорт қилиш</span>
+                        </button>
+                        <div class="mt-3">
+                            <small class="text-muted" data-lang="importFormat">
+                                Excel файл формат: Iсм | Фамилия | Телефон (1-устун)
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Tab -->
+            <div id="adminTab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 data-lang="adminPanel">Администратор панели</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 data-lang="userManagement">Фойдаланувчиларни бошқариш</h6>
+                                <button class="btn btn-primary mb-3" onclick="showAddUserModal()">
+                                    <i class="bi bi-person-plus"></i> <span data-lang="addUser">Фойдаланувчи қўшиш</span>
+                                </button>
+                                <div id="usersList">
+                                    <!-- Users list will be loaded here -->
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 data-lang="systemSettings">Тизим созламалари</h6>
+                                <div class="mb-3">
+                                    <label class="form-label" data-lang="schoolName">Мактаб номи</label>
+                                    <input type="text" class="form-control" id="schoolName" value="14-мактаб">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" data-lang="academicYear">Ўқув йили</label>
+                                    <input type="text" class="form-control" id="academicYear" value="2024-2025">
+                                </div>
+                                <button class="btn btn-success" onclick="saveSettings()">
+                                    <i class="bi bi-check-circle"></i> <span data-lang="save">Сақлаш</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Class Info Modal -->
+    <div class="modal fade" id="classInfoModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" data-lang="classInfo">Синф маълумотлари</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="classInfoContent">
+                        <!-- Class info will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Class Modal -->
+    <div class="modal fade" id="addClassModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" data-lang="addClass">Синф қўшиш</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label" data-lang="className">Синф номи</label>
+                        <input type="text" class="form-control" id="newClassName" placeholder="Мисол: 5-А синф">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" data-lang="classTeacher">Синф раҳбари</label>
+                        <select class="form-select" id="classTeacherSelect">
+                            <option value="">Танланг</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Бекор қилиш</button>
+                    <button type="button" class="btn btn-primary" onclick="addClass()">Қўшиш</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div class="modal fade" id="addUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" data-lang="addUser">Фойдаланувчи қўшиш</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label" data-lang="fullName">Тўлиқ исми</label>
+                        <input type="text" class="form-control" id="newUserName">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" data-lang="email">Электрон почта</label>
+                        <input type="email" class="form-control" id="newUserEmail">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" data-lang="password">Пароль</label>
+                        <input type="password" class="form-control" id="newUserPassword">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" data-lang="role">Роль</label>
+                        <select class="form-select" id="newUserRole">
+                            <option value="teacher">Устоз</option>
+                            <option value="admin">Администратор</option>
+                            <option value="director">Директор</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Бекор қилиш</button>
+                    <button type="button" class="btn btn-primary" onclick="addUser()">Қўшиш</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+        <div id="liveToast" class="toast" role="alert">
+            <div class="toast-header">
+                <strong class="me-auto" id="toastTitle">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toastMessage">
+                Message
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="./app.js"></script>
+</body>
+
+</html>
