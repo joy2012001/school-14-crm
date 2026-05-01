@@ -20,23 +20,24 @@ let currentLanguage = 'ru';
 let studentsData = [];
 let classesData = [];
 let attendanceData = [];
+let attendanceChart = null;
 
 // Language translations
 const translations = {
     ru: {
         title: '14-мактаб CRM',
-        subtitle: 'Система контроля посещаемости',
+        subtitle: 'Современная система контроля посещаемости',
         email: 'Электронная почта',
         password: 'Пароль',
         role: 'Роль',
         teacher: 'Учитель',
-        admin: 'Администратор',
-        director: 'Директор',
+        school_admin: 'Администрация школы',
+        super_admin: 'Супер администратор',
         login: 'Войти',
         dashboard: 'Главная',
         attendance: 'Посещаемость',
         classes: 'Классы',
-        reports: 'Отчеты',
+        reports: 'Отчёты',
         settings: 'Настройки',
         import: 'Импорт',
         adminPanel: 'Админ панель',
@@ -52,33 +53,57 @@ const translations = {
         saveAttendance: 'Сохранить посещаемость',
         classList: 'Список классов',
         addClass: 'Добавить класс',
+        editClass: 'Изменить класс',
+        deleteClass: 'Удалить класс',
+        edit: 'Изменить',
+        delete: 'Удалить',
         attendanceReports: 'Отчеты по посещаемости',
+        attendanceChart: 'График посещаемости',
         fromDate: 'От',
         toDate: 'До',
-        generateReport: 'Создать отчет',
+        date: 'Дата',
+        generateReport: 'Сгенерировать отчёт',
         importStudents: 'Импорт учеников',
         selectFile: 'Выберите Excel файл',
-        importFormat: 'Формат Excel файла: Имя | Фамилия | Телефон (1 столбец)',
+        importFormat: 'Формат Excel файла: Имя | Фамилия | Телефон',
         userManagement: 'Управление пользователями',
         addUser: 'Добавить пользователя',
-        systemSettings: 'Настройки системы',
+        systemSettings: 'Системные настройки',
         schoolName: 'Название школы',
         academicYear: 'Учебный год',
         save: 'Сохранить',
         classInfo: 'Информация о классе',
         fullName: 'Полное имя',
         className: 'Название класса',
-        classTeacher: 'Классный руководитель'
+        classTeacher: 'Классный руководитель',
+        absent: 'Отсутствует',
+        present: 'Присутствует',
+        reason: 'Причина',
+        illness: 'Болезнь',
+        family: 'Семейные обстоятельства',
+        other: 'Другое',
+        noClasses: 'Нет классов. Создайте первый класс!',
+        loading: 'Загрузка...',
+        errorLoading: 'Ошибка загрузки классов',
+        noPermission: 'У вас нет прав для добавления классов',
+        enterClassName: 'Введите название класса',
+        classAdded: 'Класс успешно добавлен!',
+        classUpdated: 'Класс успешно обновлен!',
+        classDeleted: 'Класс успешно удален!',
+        confirmDelete: 'Вы уверены, что хотите удалить класс "{className}"? Все связанные данные будут удалены.',
+        errorAdding: 'Ошибка добавления класса',
+        errorUpdating: 'Ошибка обновления класса',
+        errorDeleting: 'Ошибка удаления класса'
     },
     uz: {
         title: '14-maktab CRM',
-        subtitle: 'Davomatni nazorat tizimi',
+        subtitle: 'Zamonaviy davomat nazorat tizimi',
         email: 'Elektron pochta',
         password: 'Parol',
-        role: 'Rol',
-        teacher: 'Ustoz',
-        admin: 'Administrator',
-        director: 'Direktor',
+        role: 'Lavozim',
+        teacher: 'O\'qituvchi',
+        school_admin: 'Maktab ma\'muriyati',
+        super_admin: 'Super administrator',
         login: 'Kirish',
         dashboard: 'Bosh sahifa',
         attendance: 'Davomat',
@@ -92,30 +117,85 @@ const translations = {
         presentToday: 'Bugun kelganlar',
         absentToday: 'Bugun kelmaganlar',
         attendanceRate: 'Davomat darajasi',
-        recentActivity: 'So\'nggi faoliyat',
+        recentActivity: 'Oxirgi faoliyat',
         markAttendance: 'Davomatni belgilash',
-        selectClass: 'Sinflarni tanlang',
+        selectClass: 'Sinfni tanlang',
         refresh: 'Yangilash',
         saveAttendance: 'Davomatni saqlash',
         classList: 'Sinflar ro\'yxati',
-        addClass: 'Sinflar qo\'shish',
+        addClass: 'Sinf qo\'shish',
+        editClass: 'Sinfni tahrirlash',
+        deleteClass: 'Sinfni o\'chirish',
+        edit: 'Tahrirlash',
+        delete: 'O\'chirish',
         attendanceReports: 'Davomat hisobotlari',
+        attendanceChart: 'Davomat grafigi',
         fromDate: 'Dan',
         toDate: 'Gacha',
+        date: 'Sana',
         generateReport: 'Hisobot yaratish',
         importStudents: 'O\'quvchilarni import qilish',
         selectFile: 'Excel faylni tanlang',
-        importFormat: 'Excel fayl formati: Ism | Familiya | Telefon (1-ustun)',
+        importFormat: 'Excel fayl formati: Ism | Familiya | Telefon',
         userManagement: 'Foydalanuvchilarni boshqarish',
         addUser: 'Foydalanuvchi qo\'shish',
         systemSettings: 'Tizim sozlamalari',
         schoolName: 'Maktab nomi',
         academicYear: 'O\'quv yili',
         save: 'Saqlash',
-        classInfo: 'Sinflar ma\'lumotlari',
-        fullName: 'To\'liq ismi',
-        className: 'Sinflar nomi',
-        classTeacher: 'Sinflar rahbari'
+        classInfo: 'Sinf haqida ma\'lumot',
+        fullName: 'To\'liq ism',
+        className: 'Sinf nomi',
+        classTeacher: 'Sinf rahbari',
+        absent: 'Kelmagan',
+        present: 'Kelgan',
+        reason: 'Sabab',
+        illness: 'Kasallik',
+        family: 'Oilaviy holatlar',
+        other: 'Boshqa',
+        noClasses: 'Sinflar yo\'q. Birinchi sinf yarating!',
+        loading: 'Yuklanmoqda...',
+        errorLoading: 'Sinflarni yuklashda xatolik',
+        noPermission: 'Sizda sinflarni qo\'shish uchun ruxsat yo\'q',
+        enterClassName: 'Sinf nomini kiriting',
+        classAdded: 'Sinf muvaffaqiyatli qo\'shildi!',
+        classUpdated: 'Sinf muvaffaqiyatli yangilandi!',
+        classDeleted: 'Sinf muvaffaqiyatli o\'chirildi!',
+        confirmDelete: 'Siz "{className}" sinfini o\'chirmoqchimisiz? Barcha bog\'liq ma\'lumotlar o\'chiriladi.',
+        errorAdding: 'Sinfni qo\'shishda xatolik',
+        errorUpdating: 'Sinfni yangilashda xatolik',
+        errorDeleting: 'Sinfni o\'chirishda xatolik'
+    }
+};
+
+// Role permissions
+const rolePermissions = {
+    teacher: {
+        canViewDashboard: true,
+        canMarkAttendance: true,
+        canViewClasses: true,
+        canViewReports: false,
+        canImportStudents: false,
+        canManageUsers: false,
+        canManageSettings: false
+    },
+    school_admin: {
+        canViewDashboard: true,
+        canMarkAttendance: true,
+        canViewClasses: true,
+        canViewReports: true,
+        canImportStudents: true,
+        canManageUsers: true,
+        canManageSettings: false
+    },
+    super_admin: {
+        canViewDashboard: true,
+        canMarkAttendance: true,
+        canViewClasses: true,
+        canViewReports: true,
+        canImportStudents: true,
+        canManageUsers: true,
+        canManageSettings: true
     }
 };
 
@@ -125,30 +205,88 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function initializeApp() {
-    // Check authentication state
-    auth.onAuthStateChanged(function (user) {
-        if (user) {
-            currentUser = user;
-            showDashboard();
-        } else {
-            showLogin();
-        }
-    });
+    // Load saved language
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage) {
+        currentLanguage = savedLanguage;
+    }
+    
+    // Check for existing session first
+    if (!checkExistingSession()) {
+        showLogin();
+    }
 
     // Setup event listeners
     document.getElementById('loginForm').addEventListener('submit', handleLogin);
+    
+    // Mobile menu toggle
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const sidebar = document.getElementById('sidebar');
+    
+    if (mobileMenuToggle) {
+        mobileMenuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+        });
+    }
+    
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', function(e) {
+        if (window.innerWidth <= 768) {
+            if (!sidebar.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
+                sidebar.classList.remove('active');
+            }
+        }
+    });
 
     // Set today's date as default
     const today = new Date().toISOString().split('T')[0];
-    document.getElementById('fromDate').value = today;
-    document.getElementById('toDate').value = today;
+    const fromDateInput = document.getElementById('fromDate');
+    const toDateInput = document.getElementById('toDate');
+    
+    if (fromDateInput) fromDateInput.value = today;
+    if (toDateInput) toDateInput.value = today;
+    
+    // Auto-load students when class is selected
+    const classSelect = document.getElementById('classSelect');
+    if (classSelect) {
+        classSelect.addEventListener('change', loadStudents);
+    }
+    
+    // Update language on load
+    updateLanguage();
 }
 
 // Language functions
 function setLanguage(lang) {
     currentLanguage = lang;
     document.documentElement.lang = lang;
+    
+    // Update language buttons
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector(`.lang-btn[onclick="setLanguage('${lang}')"]`).classList.add('active');
+    
+    // Update language label
+    const langLabel = document.querySelector('.lang-label');
+    if (langLabel) {
+        langLabel.textContent = lang === 'uz' ? 'Тил:' : 'Тил:';
+    }
+    
+    // Update all text
     updateLanguage();
+    
+    // Save to localStorage
+    localStorage.setItem('preferredLanguage', lang);
+    
+    // Reload current tab to update content
+    const activeTab = document.querySelector('.tab-content.active');
+    if (activeTab) {
+        const tabName = activeTab.id.replace('Tab', '');
+        if (tabName && tabName !== 'dashboard') {
+            setTimeout(() => showTab(tabName), 100);
+        }
+    }
 }
 
 function updateLanguage() {
@@ -159,6 +297,29 @@ function updateLanguage() {
             element.textContent = translations[currentLanguage][key];
         }
     });
+    
+    // Update placeholders
+    const placeholders = {
+        'newClassName': currentLanguage === 'uz' ? 'Masalan: 1-A sinf' : 'Например: 1-А класс',
+        'newClassTeacher': currentLanguage === 'uz' ? 'Sinf rahbarining FISH' : 'ФИО классного руководителя'
+    };
+    
+    Object.keys(placeholders).forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.placeholder = placeholders[id];
+        }
+    });
+    
+    // Update role options
+    const roleSelect = document.getElementById('role');
+    if (roleSelect) {
+        roleSelect.innerHTML = `
+            <option value="teacher" data-lang="teacher">${translations[currentLanguage].teacher}</option>
+            <option value="school_admin" data-lang="school_admin">${translations[currentLanguage].school_admin}</option>
+            <option value="super_admin" data-lang="super_admin">${translations[currentLanguage].super_admin}</option>
+        `;
+    }
 }
 
 // Authentication functions
@@ -175,11 +336,11 @@ function handleLogin(e) {
 }
 
 function mockLogin(email, password, role) {
-    // Mock user data for demonstration
+    // Updated mock user data for new roles
     const mockUsers = [
-        { email: 'admin@school14.uz', password: 'admin123', role: 'admin', name: 'Администратор' },
-        { email: 'teacher@school14.uz', password: 'teacher123', role: 'teacher', name: 'Учитель' },
-        { email: 'director@school14.uz', password: 'director123', role: 'director', name: 'Директор' }
+        { email: 'admin@school14.uz', password: 'admin123', role: 'super_admin', name: 'Супер администратор' },
+        { email: 'school_admin@school14.uz', password: 'admin123', role: 'school_admin', name: 'Администратор школы' },
+        { email: 'teacher@school14.uz', password: 'teacher123', role: 'teacher', name: 'Учитель Иванов' }
     ];
 
     const user = mockUsers.find(u => u.email === email && u.password === password && u.role === role);
@@ -191,6 +352,10 @@ function mockLogin(email, password, role) {
             role: user.role,
             name: user.name
         };
+        
+        // Save to localStorage for persistent session
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        
         showDashboard();
         showToast('Успешный вход!', 'success');
     } else {
@@ -200,6 +365,7 @@ function mockLogin(email, password, role) {
 
 function logout() {
     currentUser = null;
+    localStorage.removeItem('currentUser');
     showLogin();
     showToast('Вы вышли из системы', 'info');
 }
@@ -214,14 +380,89 @@ function showDashboard() {
     document.getElementById('loginPage').classList.remove('active');
     document.getElementById('dashboardPage').classList.add('active');
 
-    // Show admin link only for admin users
-    if (currentUser && currentUser.role === 'admin') {
-        document.getElementById('adminLink').style.display = 'block';
+    // Update sidebar user info
+    updateSidebarUserInfo();
+    
+    // Apply role-based permissions
+    applyRolePermissions();
+    
+    // Set today's date for attendance
+    const today = new Date().toISOString().split('T')[0];
+    const attendanceDateInput = document.getElementById('attendanceDate');
+    if (attendanceDateInput) {
+        attendanceDateInput.value = today;
     }
 
     // Load initial data
     loadDashboardData();
     loadClasses();
+}
+
+function updateSidebarUserInfo() {
+    if (currentUser) {
+        document.getElementById('sidebarUserName').textContent = currentUser.name;
+        document.getElementById('sidebarUserRole').textContent = getRoleDisplayName(currentUser.role);
+    }
+}
+
+function getRoleDisplayName(role) {
+    const roleNames = {
+        teacher: 'Учитель',
+        school_admin: 'Администрация школы',
+        super_admin: 'Супер администратор'
+    };
+    return roleNames[role] || role;
+}
+
+function applyRolePermissions() {
+    if (!currentUser) return;
+    
+    const permissions = rolePermissions[currentUser.role];
+    
+    // Show/hide admin sections based on permissions
+    const adminSection = document.getElementById('adminSection');
+    const systemSettingsSection = document.getElementById('systemSettingsSection');
+    
+    if (permissions.canManageUsers) {
+        adminSection.style.display = 'block';
+    } else {
+        adminSection.style.display = 'none';
+    }
+    
+    if (permissions.canManageSettings) {
+        systemSettingsSection.style.display = 'block';
+    } else {
+        systemSettingsSection.style.display = 'none';
+    }
+    
+    // Disable/enable navigation based on permissions
+    const reportsLink = document.querySelector('a[href*="reports"]');
+    const settingsLink = document.querySelector('a[href*="settings"]');
+    
+    if (!permissions.canViewReports && reportsLink) {
+        reportsLink.style.opacity = '0.5';
+        reportsLink.style.pointerEvents = 'none';
+    }
+    
+    if (!permissions.canImportStudents && !permissions.canManageUsers && settingsLink) {
+        settingsLink.style.opacity = '0.5';
+        settingsLink.style.pointerEvents = 'none';
+    }
+}
+
+// Check for existing session on page load
+function checkExistingSession() {
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+        try {
+            currentUser = JSON.parse(savedUser);
+            showDashboard();
+            return true;
+        } catch (error) {
+            localStorage.removeItem('currentUser');
+        }
+    }
+    return false;
 }
 
 function showTab(tabName) {
@@ -260,14 +501,160 @@ function showTab(tabName) {
 
 // Dashboard functions
 function loadDashboardData() {
-    // Mock data for demonstration
-    document.getElementById('totalStudents').textContent = '245';
-    document.getElementById('presentToday').textContent = '232';
-    document.getElementById('absentToday').textContent = '13';
-    document.getElementById('attendanceRate').textContent = '94.7%';
-
-    // Load recent activity
+    // Load real data from Firebase
+    loadDashboardStats();
     loadRecentActivity();
+    loadAttendanceChart();
+}
+
+function loadDashboardStats() {
+    // Get total students count
+    db.collection('students').get().then((snapshot) => {
+        const totalStudents = snapshot.size;
+        document.getElementById('totalStudents').textContent = totalStudents;
+    }).catch((error) => {
+        console.error('Error loading students:', error);
+        document.getElementById('totalStudents').textContent = '0';
+    });
+
+    // Get today's attendance
+    const today = new Date().toISOString().split('T')[0];
+    db.collection('attendance').where('date', '==', today).get().then((snapshot) => {
+        let presentCount = 0;
+        let absentCount = 0;
+
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            if (data.present) {
+                presentCount += data.presentCount || 0;
+            }
+            if (data.absent) {
+                absentCount += data.absentCount || 0;
+            }
+        });
+
+        document.getElementById('presentToday').textContent = presentCount;
+        document.getElementById('absentToday').textContent = absentCount;
+        
+        const total = presentCount + absentCount;
+        const rate = total > 0 ? ((presentCount / total) * 100).toFixed(1) + '%' : '0%';
+        document.getElementById('attendanceRate').textContent = rate;
+    }).catch((error) => {
+        console.error('Error loading attendance:', error);
+        document.getElementById('presentToday').textContent = '0';
+        document.getElementById('absentToday').textContent = '0';
+        document.getElementById('attendanceRate').textContent = '0%';
+    });
+}
+
+function loadAttendanceChart() {
+    const ctx = document.getElementById('attendanceChart');
+    if (!ctx) return;
+    
+    // Destroy existing chart if it exists
+    if (attendanceChart) {
+        attendanceChart.destroy();
+    }
+    
+    // Create new chart
+    attendanceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница'],
+            datasets: [{
+                label: 'Посещаемость (%)',
+                data: [95, 94, 96, 93, 94.7],
+                borderColor: 'rgb(102, 126, 234)',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: 'rgb(102, 126, 234)',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        font: {
+                            size: 14,
+                            weight: '600'
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 12,
+                    titleFont: {
+                        size: 14,
+                        weight: '600'
+                    },
+                    bodyFont: {
+                        size: 13
+                    },
+                    callbacks: {
+                        label: function(context) {
+                            return 'Посещаемость: ' + context.parsed.y + '%';
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    min: 85,
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        },
+                        font: {
+                            size: 12
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                x: {
+                    ticks: {
+                        font: {
+                            size: 12
+                        }
+                    },
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+}
+
+function updateDashboardStats() {
+    // Update dashboard with new attendance data
+    const presentToday = document.getElementById('presentToday');
+    const absentToday = document.getElementById('absentToday');
+    const attendanceRate = document.getElementById('attendanceRate');
+    
+    // Mock update - in real app this would come from database
+    const currentPresent = parseInt(presentToday.textContent);
+    const currentAbsent = parseInt(absentToday.textContent);
+    
+    presentToday.textContent = currentPresent + 1;
+    absentToday.textContent = currentAbsent;
+    
+    const total = currentPresent + currentAbsent + 1;
+    const rate = ((currentPresent + 1) / total * 100).toFixed(1);
+    attendanceRate.textContent = rate + '%';
 }
 
 function loadRecentActivity() {
@@ -346,126 +733,418 @@ function loadClassesSelect() {
 }
 
 function loadStudents() {
-    const classId = document.getElementById('classSelect').value;
-
+    const classSelect = document.getElementById('classSelect');
+    const classId = classSelect.value;
+    
     if (!classId) {
-        showToast('Выберите класс', 'warning');
+        document.getElementById('studentsList').innerHTML = '<p class="text-muted">Выберите класс для отображения учеников</p>';
+        updateAttendanceCounts();
         return;
     }
-
-    // Mock students data
-    const mockStudents = [
-        { id: '1', name: 'Абдуллаев Али', class: '5-А' },
-        { id: '2', name: 'Ахмедова Барно', class: '5-А' },
-        { id: '3', name: 'Бобоев Карим', class: '5-А' },
-        { id: '4', name: 'Валиева Дилора', class: '5-А' },
-        { id: '5', name: 'Ганиев Элдор', class: '5-А' },
-        { id: '6', name: 'Джураева Зухра', class: '5-А' },
-        { id: '7', name: 'Ермаков Илья', class: '5-А' },
-        { id: '8', name: 'Жураева Камола', class: '5-А' },
-        { id: '9', name: 'Каримов Лазиз', class: '5-А' },
-        { id: '10', name: 'Латипова Мухаббат', class: '5-А' }
-    ];
-
+    
+    // Get selected class name
+    const selectedOption = classSelect.options[classSelect.selectedIndex];
+    const className = selectedOption.text;
+    
     const studentsList = document.getElementById('studentsList');
-    studentsList.innerHTML = '';
-
-    mockStudents.forEach(student => {
-        const studentHtml = `
-            <div class="student-item">
-                <div class="student-info">
-                    <div class="student-avatar">${student.name.charAt(0)}</div>
-                    <div class="student-details">
-                        <div class="student-name">${student.name}</div>
-                        <div class="student-class">${student.class}</div>
+    
+    if (!classId) {
+        studentsList.innerHTML = `<div class="alert alert-warning">${translations[currentLanguage].selectClass}</div>`;
+        return;
+    }
+    
+    // Show loading
+    studentsList.innerHTML = `<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">${translations[currentLanguage].loading}</span></div></div>`;
+    
+    // Load real students from Firebase
+    db.collection('students').where('classId', '==', classId).get().then((snapshot) => {
+        studentsList.innerHTML = '';
+        
+        if (snapshot.empty) {
+            studentsList.innerHTML = `<div class="alert alert-info">${currentLanguage === 'uz' ? 'Bu sinfda o\'quvchilar yo\'q' : 'В этом классе нет учеников'}</div>`;
+            return;
+        }
+        
+        const today = new Date().toISOString().split('T')[0];
+        
+        // Load today's attendance for this class
+        db.collection('attendance').where('classId', '==', classId).where('date', '==', today).get().then((attendanceSnapshot) => {
+            const attendanceData = {};
+            attendanceSnapshot.forEach((doc) => {
+                attendanceData[doc.data().studentId] = doc.data();
+            });
+            
+            snapshot.forEach((doc) => {
+                const student = doc.data();
+                student.id = doc.id;
+                
+                const isPresent = attendanceData[student.id] ? attendanceData[student.id].present : true;
+                const absentReason = attendanceData[student.id] ? attendanceData[student.id].absentReason : '';
+                
+                const studentHtml = `
+                    <div class="student-item">
+                        <div class="student-info">
+                            <div class="student-avatar">${student.name.charAt(0)}</div>
+                            <div class="student-details">
+                                <div class="student-name">${student.name}</div>
+                                <div class="student-class">${currentLanguage === 'uz' ? 'Sinf:' : 'Класс:'} ${classId}</div>
+                            </div>
+                        </div>
+                        <div class="attendance-checkbox">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="student_${student.id}" ${isPresent ? 'checked' : ''}>
+                                <label class="form-check-label" for="student_${student.id}">
+                                    ${translations[currentLanguage].present}
+                                </label>
+                            </div>
+                            <div class="absent-reason" id="reason_${student.id}" style="display: ${isPresent ? 'none' : 'block'};">
+                                <select class="form-select form-select-sm">
+                                    <option value="">${currentLanguage === 'uz' ? 'Sababni tanlang' : 'Выберите причину'}</option>
+                                    <option value="illness" ${absentReason === 'illness' ? 'selected' : ''}>${translations[currentLanguage].illness}</option>
+                                    <option value="family" ${absentReason === 'family' ? 'selected' : ''}>${translations[currentLanguage].family}</option>
+                                    <option value="other" ${absentReason === 'other' ? 'selected' : ''}>${translations[currentLanguage].other}</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="attendance-checkbox">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="${student.id}" id="student_${student.id}">
-                        <label class="form-check-label" for="student_${student.id}">
-                            Присутствует
-                        </label>
-                    </div>
-                </div>
-            </div>
-        `;
-        studentsList.innerHTML += studentHtml;
+                `;
+                studentsList.innerHTML += studentHtml;
+            });
+            
+            // Add event listeners for checkboxes
+            document.querySelectorAll('.attendance-checkbox input').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const studentId = this.id.replace('student_', '');
+                    const reasonDiv = document.getElementById(`reason_${studentId}`);
+                    
+                    if (this.checked) {
+                        reasonDiv.style.display = 'none';
+                    } else {
+                        reasonDiv.style.display = 'block';
+                    }
+                    
+                    updateAttendanceSummary();
+                });
+            });
+            
+            updateAttendanceSummary();
+        });
+    }).catch((error) => {
+        console.error('Error loading students:', error);
+        studentsList.innerHTML = '<div class="alert alert-danger">Ошибка загрузки учеников</div>';
     });
 }
 
-function saveAttendance() {
-    const checkboxes = document.querySelectorAll('#studentsList input[type="checkbox"]:checked');
+function toggleAbsentReason(studentId) {
+    const studentItem = document.querySelector(`[data-student-id="${studentId}"]`);
+    const reasonDiv = document.getElementById(`reason_${studentId}`);
+    const checkbox = document.getElementById(`student_${studentId}`);
+    
+    if (checkbox.checked) {
+        studentItem.classList.add('absent');
+        reasonDiv.style.display = 'block';
+    } else {
+        studentItem.classList.remove('absent');
+        reasonDiv.style.display = 'none';
+        document.getElementById(`reason_select_${studentId}`).value = '';
+    }
+    
+    updateAttendanceCounts();
+}
 
-    if (checkboxes.length === 0) {
-        showToast('Выберите хотя бы одного ученика', 'warning');
+function updateAttendanceCounts() {
+    const totalStudents = document.querySelectorAll('.student-item').length;
+    const absentStudents = document.querySelectorAll('.student-item.absent').length;
+    const presentStudents = totalStudents - absentStudents;
+    
+    document.getElementById('presentCount').textContent = presentStudents;
+    document.getElementById('absentCount').textContent = absentStudents;
+}
+
+function saveAttendance() {
+    const classSelect = document.getElementById('classSelect');
+    const selectedClass = classSelect.options[classSelect.selectedIndex].text;
+    const attendanceDate = document.getElementById('attendanceDate').value;
+    const absentCheckboxes = document.querySelectorAll('#studentsList input[type="checkbox"]:checked');
+    const totalStudents = document.querySelectorAll('.student-item').length;
+    const presentStudents = totalStudents - absentCheckboxes.length;
+
+    if (totalStudents === 0) {
+        showToast('Сначала выберите класс', 'warning');
         return;
     }
 
+    // Validate absent reasons
+    let validAbsent = true;
+    absentCheckboxes.forEach(checkbox => {
+        const studentId = checkbox.value;
+        const reasonSelect = document.getElementById(`reason_select_${studentId}`);
+        if (checkbox.checked && (!reasonSelect.value || reasonSelect.value === '')) {
+            validAbsent = false;
+        }
+    });
+
+    if (!validAbsent) {
+        showToast('Укажите причину отсутствия для всех отмеченных учеников', 'warning');
+        return;
+    }
+
+    // Prepare attendance data
+    const attendanceData = {
+        class: selectedClass,
+        date: attendanceDate,
+        totalStudents: totalStudents,
+        presentStudents: presentStudents,
+        absentStudents: absentCheckboxes.length,
+        attendanceRate: ((presentStudents / totalStudents) * 100).toFixed(1) + '%',
+        absentDetails: []
+    };
+
+    // Collect absent details
+    absentCheckboxes.forEach(checkbox => {
+        const studentItem = document.querySelector(`[data-student-id="${checkbox.value}"]`);
+        const studentName = studentItem.querySelector('.student-name').textContent;
+        const reasonSelect = document.getElementById(`reason_select_${checkbox.value}`);
+        
+        attendanceData.absentDetails.push({
+            studentId: checkbox.value,
+            studentName: studentName,
+            reason: reasonSelect.value,
+            reasonText: reasonSelect.options[reasonSelect.selectedIndex].text
+        });
+    });
+
     // Show confirmation dialog
-    if (confirm(`Отметить присутствие для ${checkboxes.length} учеников?`)) {
+    const confirmMessage = `Сохранить посещаемость для класса ${selectedClass}?\n` +
+                          `Присутствуют: ${presentStudents}\n` +
+                          `Отсутствуют: ${absentCheckboxes.length}\n` +
+                          `Процент посещаемости: ${attendanceData.attendanceRate}`;
+
+    if (confirm(confirmMessage)) {
         // Mock save operation
+        console.log('Saving attendance:', attendanceData);
         showToast('Посещаемость успешно сохранена!', 'success');
 
         // Add to recent activity
         const activity = {
             type: 'success',
-            title: `${currentUser.name} отметил(а) посещаемость`,
+            title: `${currentUser.name} сохранил(а) посещаемость для ${selectedClass}`,
             time: 'Только что'
         };
         addRecentActivity(activity);
+        
+        // Update dashboard stats
+        updateDashboardStats();
     }
 }
 
 // Classes functions
 function loadClasses() {
-    // Mock classes data
-    const mockClasses = [
-        { id: '1', name: '1-А класс', teacher: 'Иванова А.А.', studentCount: 25, attendance: '96%' },
-        { id: '2', name: '2-Б класс', teacher: 'Петров В.В.', studentCount: 23, attendance: '94%' },
-        { id: '3', name: '3-В класс', teacher: 'Сидорова К.К.', studentCount: 27, attendance: '92%' },
-        { id: '4', name: '4-Г класс', teacher: 'Козлов Д.Д.', studentCount: 22, attendance: '95%' },
-        { id: '5', name: '5-А класс', teacher: 'Смирнова Е.Е.', studentCount: 26, attendance: '93%' }
-    ];
-
     const classesList = document.getElementById('classesList');
-    classesList.innerHTML = '';
+    const addClassBtn = document.getElementById('addClassBtn');
+    
+    // Show/hide add class button based on permissions
+    if (currentUser && (currentUser.role === 'school_admin' || currentUser.role === 'super_admin')) {
+        addClassBtn.style.display = 'inline-flex';
+    } else {
+        addClassBtn.style.display = 'none';
+    }
+    
+    classesList.innerHTML = `<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">${translations[currentLanguage].loading}</span></div></div>`;
+    
+    // Load classes from Firebase
+    db.collection('classes').get().then((querySnapshot) => {
+        classesData = [];
+        classesList.innerHTML = '';
+        
+        if (querySnapshot.empty) {
+            classesList.innerHTML = `<div class="alert alert-info text-center">${translations[currentLanguage].noClasses}</div>`;
+            return;
+        }
+        
+        querySnapshot.forEach((doc) => {
+            const classData = doc.data();
+            classData.id = doc.id;
+            classesData.push(classData);
+            
+            const classHtml = createClassCard(classData);
+            classesList.innerHTML += classHtml;
+        });
+        
+        // Update class selectors
+        updateClassSelectors();
+    }).catch((error) => {
+        console.error('Error loading classes:', error);
+        showToast(translations[currentLanguage].errorLoading, 'danger');
+        classesList.innerHTML = '<div class="alert alert-danger">Ошибка загрузки классов</div>';
+    });
+}
 
-    mockClasses.forEach(cls => {
-        const classHtml = `
-            <div class="class-item">
-                <div class="class-header">
-                    <div class="class-name">${cls.name}</div>
-                    <div class="class-actions">
-                        <button class="btn btn-sm btn-info" onclick="showClassInfo('${cls.id}')">
-                            <i class="bi bi-info-circle"></i> Инфо
-                        </button>
-                        <button class="btn btn-sm btn-primary" onclick="editClass('${cls.id}')">
-                            <i class="bi bi-pencil"></i> Изменить
-                        </button>
-                    </div>
-                </div>
-                <div class="class-info">
-                    <div class="info-item">
-                        <i class="bi bi-person"></i>
-                        <span class="info-label">Классный руководитель:</span>
-                        <span class="info-value">${cls.teacher}</span>
-                    </div>
-                    <div class="info-item">
-                        <i class="bi bi-people"></i>
-                        <span class="info-label">Количество учеников:</span>
-                        <span class="info-value">${cls.studentCount}</span>
-                    </div>
-                    <div class="info-item">
-                        <i class="bi bi-graph-up"></i>
-                        <span class="info-label">Посещаемость:</span>
-                        <span class="info-value">${cls.attendance}</span>
-                    </div>
+function createClassCard(cls) {
+    const studentCount = cls.studentCount || 0;
+    const present = cls.present || 0;
+    const absent = cls.absent || 0;
+    const attendance = studentCount > 0 ? ((present / studentCount) * 100).toFixed(1) + '%' : '0%';
+    
+    return `
+        <div class="class-card" data-class-id="${cls.id}">
+            <div class="class-header">
+                <div class="class-name">${cls.name}</div>
+                <div class="class-teacher">
+                    <i class="bi bi-person-badge"></i> ${cls.teacher || 'Не назначен'}
                 </div>
             </div>
-        `;
-        classesList.innerHTML += classHtml;
+            <div class="class-stats">
+                <div class="stat-row">
+                    <div class="stat-label">
+                        <i class="bi bi-people-fill"></i>
+                        <span>${translations[currentLanguage].totalStudents || 'Всего учеников'}</span>
+                    </div>
+                    <div class="stat-value">${studentCount}</div>
+                </div>
+                <div class="stat-row">
+                    <div class="stat-label">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        <span>${translations[currentLanguage].presentToday || 'Присутствуют'}</span>
+                    </div>
+                    <div class="stat-value text-success">${present}</div>
+                </div>
+                <div class="stat-row">
+                    <div class="stat-label">
+                        <i class="bi bi-x-circle-fill text-danger"></i>
+                        <span>${translations[currentLanguage].absentToday || 'Отсутствуют'}</span>
+                    </div>
+                    <div class="stat-value text-danger">${absent}</div>
+                </div>
+                <div class="stat-row">
+                    <div class="stat-label">
+                        <i class="bi bi-percent"></i>
+                        <span>${translations[currentLanguage].attendanceRate || 'Посещаемость'}</span>
+                    </div>
+                    <div class="stat-value">${attendance}</div>
+                </div>
+            </div>
+            <div class="class-actions">
+                <button class="btn btn-primary" onclick="showClassInfo('${cls.id}')">
+                    <i class="bi bi-info-circle"></i> ${translations[currentLanguage].classInfo || 'Информация'}
+                </button>
+                <button class="btn btn-info" onclick="goToAttendance('${cls.id}')">
+                    <i class="bi bi-calendar-check"></i> ${translations[currentLanguage].markAttendance || 'Посещаемость'}
+                </button>
+                ${currentUser && (currentUser.role === 'school_admin' || currentUser.role === 'super_admin') ? `
+                    <button class="btn btn-warning" onclick="editClass('${cls.id}')">
+                        <i class="bi bi-pencil"></i> ${translations[currentLanguage].edit || 'Изменить'}
+                    </button>
+                    <button class="btn btn-danger" onclick="deleteClass('${cls.id}')">
+                        <i class="bi bi-trash"></i> ${translations[currentLanguage].delete || 'Удалить'}
+                    </button>
+                ` : ''}
+            </div>
+        </div>
+    `;
+}
+
+function updateClassSelectors() {
+    const selectors = [
+        'classSelect',
+        'reportClassSelect', 
+        'classImport'
+    ];
+    
+    selectors.forEach(selectorId => {
+        const select = document.getElementById(selectorId);
+        if (!select) return;
+        
+        const currentValue = select.value;
+        const defaultOption = selectorId === 'reportClassSelect' ? 
+            '<option value="">Все классы</option>' : 
+            '<option value="" data-lang="selectClass">Выберите класс</option>';
+        
+        select.innerHTML = defaultOption;
+        
+        classesData.forEach(cls => {
+            const option = new Option(cls.name, cls.id);
+            select.add(option);
+        });
+        
+        // Restore previous selection
+        if (currentValue) {
+            select.value = currentValue;
+        }
     });
+}
+
+function showAddClassModal() {
+    if (!currentUser || (currentUser.role !== 'school_admin' && currentUser.role !== 'super_admin')) {
+        showToast(translations[currentLanguage].noPermission, 'warning');
+        return;
+    }
+    
+    // Clear form
+    document.getElementById('newClassName').value = '';
+    document.getElementById('newClassTeacher').value = '';
+    
+    const modal = new bootstrap.Modal(document.getElementById('addClassModal'));
+    modal.show();
+}
+
+function addClass() {
+    const className = document.getElementById('newClassName').value.trim();
+    const teacher = document.getElementById('newClassTeacher').value.trim();
+    
+    if (!className) {
+        showToast(translations[currentLanguage].enterClassName, 'warning');
+        return;
+    }
+    
+    const classData = {
+        name: className,
+        teacher: teacher,
+        studentCount: 0,
+        present: 0,
+        absent: 0,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        createdBy: currentUser.uid
+    };
+    
+    db.collection('classes').add(classData).then((docRef) => {
+        showToast(translations[currentLanguage].classAdded, 'success');
+        
+        // Add activity
+        addRecentActivity({
+            type: 'success',
+            title: `${currentUser.name} добавил(а) класс: ${className}`,
+            time: 'Только что'
+        });
+        
+        // Close modal
+        bootstrap.Modal.getInstance(document.getElementById('addClassModal')).hide();
+        
+        // Reload classes
+        loadClasses();
+        
+    }).catch((error) => {
+        console.error('Error adding class:', error);
+        showToast(translations[currentLanguage].errorAdding, 'danger');
+    });
+}
+
+function editClass(classId) {
+    const classData = classesData.find(c => c.id === classId);
+    if (!classData) return;
+    
+    // Fill form with existing data
+    document.getElementById('editClassName').value = classData.name;
+    document.getElementById('editClassTeacher').value = classData.teacher || '';
+    document.getElementById('editClassId').value = classId;
+    
+}
+
+function goToAttendance(classId) {
+    // Switch to attendance tab and select the class
+    showTab('attendance');
+    document.getElementById('classSelect').value = classId;
+    loadStudents();
 }
 
 function showClassInfo(classId) {
@@ -884,3 +1563,5 @@ window.saveSettings = saveSettings;
 window.editClass = editClass;
 window.editUser = editUser;
 window.deleteUser = deleteUser;
+window.toggleAbsentReason = toggleAbsentReason;
+window.goToAttendance = goToAttendance;
