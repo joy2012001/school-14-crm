@@ -1,134 +1,91 @@
-# 14-мактаб CRM Система
+# School CRM (Reboot)
 
-🎯 **Полная CRM система для контроля посещаемости школы**
+Modern school CRM with Firebase persistence, passwordless login via email magic-link, role-based access, Excel import, attendance, and reporting.
 
-## ✨ Возможности
+## Main features
 
-- 🔐 **Система аутентификации** - Администратор, Учителя, Директор
-- 📊 **Контроль посещаемости** - Отметка присутствия/отсутствия
-- 📱 **Адаптивный дизайн** - Работает на всех устройствах
-- 🌐 **Двуязычный интерфейс** - Русский и Узбекский
-- 📤 **Импорт из Excel** - Загрузка списков учеников
-- 📈 **Статистика и отчеты** - Детальная аналитика
-- 👨‍💼 **Админ панель** - Полный контроль системы
+- Passwordless authentication with Firebase Email Link
+- Automatic owner role (`super_admin`) for `quvonch12290@gmail.com`
+- Roles: `teacher`, `school_admin`, `super_admin`
+- Persistent Firestore storage:
+  - classes
+  - students
+  - attendance
+  - settings
+  - user role mapping
+- Excel import (`.xlsx`, `.xls`) for students
+- Attendance reporting with CSV export and print
+- RU/UZ localization with instant switch
+- Responsive modern Bootstrap UI
 
-## 🚀 Быстрый старт
+## Stack
 
-### Тестовые аккаунты:
-- **Администратор:** `admin@school14.uz` / `admin123`
-- **Учитель:** `teacher@school14.uz` / `teacher123`
-- **Директор:** `director@school14.uz` / `director123`
+- HTML + SCSS + Vanilla JS
+- Bootstrap 5
+- Firebase Auth + Firestore
+- Chart.js
+- SheetJS (XLSX)
 
-### Локальный запуск:
+## Local run
+
 ```bash
-# Установка зависимостей
 npm install
-
-# Компиляция стилей
-npx sass style.scss style.css --style=compressed
-
-# Запуск локального сервера
+npm run build
 npx serve .
 ```
 
-## 📁 Структура проекта
+Open the printed local URL and use the magic-link login form.
 
+## Firebase setup
+
+1. Create/choose Firebase project.
+2. Enable **Authentication**:
+   - Sign-in method: **Email link (passwordless sign-in)**
+   - Add your domain(s) in Authorized domains (localhost + production domain)
+3. Enable **Firestore** in production mode.
+4. Replace firebase config in `app.js` if needed.
+
+## Firestore data model
+
+- `users/{uid}`
+  - `uid`, `email`, `displayName`, `role`, timestamps
+- `usersByEmail/{encodedEmail}`
+  - `email`, `role`, timestamps
+- `classes/{classId}`
+  - `name`, `teacher`, timestamps
+- `students/{studentId}`
+  - `firstName`, `lastName`, `phone`, `classId`, timestamps
+- `attendance/{date_class_student}`
+  - `date`, `classId`, `studentId`, `present`, `reason`, `markedBy`, timestamps
+- `settings/main`
+  - `schoolName`, `academicYear`, timestamps
+
+## Owner and roles
+
+- Owner email: `quvonch12290@gmail.com`
+- On first login, owner is automatically assigned `super_admin`.
+- `super_admin` can manage role invitations in Admin tab.
+- `school_admin` can manage classes/students/attendance/settings.
+- `teacher` can work with attendance and reports (read-oriented flow).
+
+## Deploy
+
+This is a static app and can be deployed on Netlify/Vercel/GitHub Pages.
+
+### Netlify
+
+- Build command: `npm run build`
+- Publish directory: `.`
+
+## GitHub push (manual commands)
+
+```bash
+git add .
+git commit -m "reboot school crm with firebase magic-link auth and persistent workflows"
+git push -u origin HEAD
 ```
-14 maktab CRM/
-├── index.html              # Главная страница
-├── style.scss              # Исходные стили
-├── style.css               # Скомпилированные стили
-├── app.js                  # JavaScript логика
-├── package.json            # Зависимости и скрипты
-├── netlify.toml            # Конфигурация Netlify
-├── Logo.jpg                # Логотип школы
-├── favicon.png             # Иконка сайта
-└── README.md               # Этот файл
-```
 
-## 🔧 Настройка
+## Notes
 
-### 1. Firebase
-- Создайте проект на https://console.firebase.google.com
-- Включите Authentication и Firestore Database
-- Обновите конфигурацию в `app.js`
-
-### 2. Развертывание на Netlify
-- Загрузите код на GitHub
-- Подключите репозиторий в Netlify
-- Настройте переменные окружения при необходимости
-
-### 3. Импорт учеников
-Создайте Excel файл с колонками:
-- Имя
-- Фамилия  
-- Телефон
-
-## 🛠️ Технологии
-
-- **Frontend:** HTML5, CSS3, JavaScript ES6+
-- **UI Framework:** Bootstrap 5.3
-- **Icons:** Bootstrap Icons
-- **Database:** Firebase Firestore
-- **Authentication:** Firebase Auth
-- **Deployment:** Netlify
-- **CSS Preprocessor:** Sass/SCSS
-
-## 📱 Адаптивность
-
-Система полностью адаптивна и работает на:
-- 🖥️ Десктопах
-- 💻 Ноутбуках  
-- 📱 Планшетах
-- 📱 Смартфонах
-
-## 🔒 Безопасность
-
-- Firebase Authentication
-- Правила доступа Firestore
-- HTTPS на Netlify
-- Валидация данных
-- Защита от XSS
-
-## 🌐 Языки
-
-- 🇷🇺 Русский
-- 🇺🇿 Узбекский
-
-Переключение языков в один клик в интерфейсе.
-
-## 📊 Функции
-
-### Для учителей:
-- Отметка посещаемости
-- Просмотр списков классов
-- Создание отчетов
-
-### Для администрации:
-- Управление пользователями
-- Настройки системы
-- Полная статистика
-
-### Для директора:
-- Обзор всей школы
-- Аналитика посещаемости
-- Отчеты по периодам
-
-## 🚨 Важное
-
-- Все данные хранятся в Firebase
-- Система готова к использованию
-- Бесплатное развертывание на Netlify
-- Поддержка всех современных браузеров
-
-## 📞 Поддержка
-
-При проблемах:
-1. Проверьте консоль браузера
-2. Убедитесь что Firebase настроен
-3. Проверьте пути к файлам
-4. Очистите кэш браузера
-
----
-
-**Система готова к использованию! 🎉**
+- Email-link authentication requires users to open the link from the same browser/session for best UX.
+- Firestore security rules should be configured in Firebase Console according to your policy before production go-live.

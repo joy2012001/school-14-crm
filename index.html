@@ -1,546 +1,322 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>14-мактаб CRM - Система контроля посещаемости</title>
-    <link rel="icon" type="image" href="./favicon.png">
-    <link rel="stylesheet" href="./style.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>School CRM</title>
+  <link rel="icon" type="image/png" href="./favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="./style.css">
 </head>
-
 <body>
-    <!-- Login Page -->
-    <div id="loginPage" class="page active">
-        <div class="login-container">
-            <div class="login-background"></div>
-            <div class="login-card">
-                <div class="login-header">
-                    <img src="Logo.jpg" alt="Logo" class="login-logo">
-                    <h1 data-lang="title">14-мактаб CRM</h1>
-                    <p data-lang="subtitle">Современная система контроля посещаемости</p>
-                </div>
-                
-                <form id="loginForm">
-                    <div class="form-group">
-                        <label for="email" class="form-label" data-lang="email">Электронная почта</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                            <input type="email" class="form-control" id="email" required>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="password" class="form-label" data-lang="password">Пароль</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                            <input type="password" class="form-control" id="password" required>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="role" class="form-label" data-lang="role">Роль</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
-                            <select class="form-select" id="role">
-                                <option value="teacher" data-lang="teacher">Учитель</option>
-                                <option value="school_admin" data-lang="school_admin">Администрация школы</option>
-                                <option value="super_admin" data-lang="super_admin">Супер администратор</option>
-                            </select>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100" data-lang="login">
-                        <i class="bi bi-box-arrow-in-right"></i> Войти
-                    </button>
-                </form>
-                
-                <div class="language-switch">
-                    <button class="btn btn-outline-light btn-sm active" onclick="setLanguage('ru')">Русский</button>
-                    <button class="btn btn-outline-light btn-sm" onclick="setLanguage('uz')">O'zbek</button>
-                </div>
-            </div>
+  <div id="appRoot">
+    <section id="authScreen" class="auth-screen">
+      <div class="auth-card shadow-lg">
+        <div class="auth-brand">
+          <img src="./Logo.jpg" alt="School Logo" class="brand-logo">
+          <h1 data-i18n="appTitle">School CRM</h1>
+          <p data-i18n="authSubtitle">Вход для учителей и администрации через email-код</p>
         </div>
+        <form id="magicLinkForm" class="auth-form">
+          <label for="loginEmail" class="form-label" data-i18n="emailLabel">Email</label>
+          <div class="input-group mb-3">
+            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+            <input id="loginEmail" type="email" class="form-control" required placeholder="teacher@school.uz">
+          </div>
+          <button id="sendLinkBtn" type="submit" class="btn btn-primary w-100">
+            <i class="bi bi-send"></i>
+            <span data-i18n="sendLink">Отправить код-вход</span>
+          </button>
+        </form>
+        <div class="d-flex justify-content-center gap-2 mt-4">
+          <button class="btn btn-outline-secondary btn-sm lang-btn active" data-lang="ru">RU</button>
+          <button class="btn btn-outline-secondary btn-sm lang-btn" data-lang="uz">UZ</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="dashboardScreen" class="dashboard-screen d-none">
+      <aside id="sidebar" class="app-sidebar">
+        <div class="sidebar-top">
+          <div class="d-flex align-items-center gap-2">
+            <img src="./favicon.png" class="sidebar-logo" alt="logo">
+            <div>
+              <div class="fw-bold text-white">School CRM</div>
+              <small class="text-white-50" id="userRoleBadge">Teacher</small>
+            </div>
+          </div>
+          <button id="closeSidebarBtn" class="btn btn-sm btn-outline-light d-lg-none">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+        <div class="sidebar-user my-3">
+          <div class="text-white fw-semibold" id="currentUserName">User</div>
+          <small class="text-white-50" id="currentUserEmail">user@email.com</small>
+        </div>
+        <nav class="nav flex-column gap-1">
+          <button class="nav-link sidebar-link active" data-tab="dashboard"><i class="bi bi-grid"></i> <span data-i18n="tabDashboard">Главная</span></button>
+          <button class="nav-link sidebar-link" data-tab="classes"><i class="bi bi-diagram-3"></i> <span data-i18n="tabClasses">Классы</span></button>
+          <button class="nav-link sidebar-link" data-tab="students"><i class="bi bi-people"></i> <span data-i18n="tabStudents">Ученики</span></button>
+          <button class="nav-link sidebar-link" data-tab="attendance"><i class="bi bi-check2-square"></i> <span data-i18n="tabAttendance">Посещаемость</span></button>
+          <button class="nav-link sidebar-link" data-tab="reports"><i class="bi bi-bar-chart"></i> <span data-i18n="tabReports">Отчеты</span></button>
+          <button class="nav-link sidebar-link" data-tab="settings"><i class="bi bi-gear"></i> <span data-i18n="tabSettings">Настройки</span></button>
+          <button class="nav-link sidebar-link d-none" id="adminTabButton" data-tab="admin"><i class="bi bi-shield-lock"></i> <span data-i18n="tabAdmin">Админ</span></button>
+        </nav>
+        <div class="mt-auto pt-3">
+          <button id="logoutBtn" class="btn btn-outline-light w-100"><i class="bi bi-box-arrow-right"></i> <span data-i18n="logout">Выйти</span></button>
+        </div>
+      </aside>
+
+      <main class="app-main">
+        <header class="app-header">
+          <button id="openSidebarBtn" class="btn btn-light d-lg-none"><i class="bi bi-list"></i></button>
+          <div>
+            <h2 id="pageTitle" class="mb-0">Dashboard</h2>
+            <small id="pageSubtitle" class="text-muted">Overview</small>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary btn-sm lang-btn active" data-lang="ru">RU</button>
+            <button class="btn btn-outline-secondary btn-sm lang-btn" data-lang="uz">UZ</button>
+          </div>
+        </header>
+
+        <section class="tab-panel active" id="tab-dashboard">
+          <div class="row g-3 mb-4">
+            <div class="col-6 col-xl-3"><div class="metric-card"><small data-i18n="metricStudents">Ученики</small><h3 id="metricStudents">0</h3></div></div>
+            <div class="col-6 col-xl-3"><div class="metric-card"><small data-i18n="metricClasses">Классы</small><h3 id="metricClasses">0</h3></div></div>
+            <div class="col-6 col-xl-3"><div class="metric-card"><small data-i18n="metricPresent">Присутствуют сегодня</small><h3 id="metricPresent">0</h3></div></div>
+            <div class="col-6 col-xl-3"><div class="metric-card"><small data-i18n="metricRate">Посещаемость</small><h3 id="metricRate">0%</h3></div></div>
+          </div>
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white"><strong data-i18n="attendanceChart">График посещаемости</strong></div>
+            <div class="card-body"><canvas id="attendanceChartCanvas" height="110"></canvas></div>
+          </div>
+        </section>
+
+        <section class="tab-panel" id="tab-classes">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0" data-i18n="classManagement">Управление классами</h5>
+            <button id="addClassBtn" class="btn btn-primary"><i class="bi bi-plus-lg"></i> <span data-i18n="addClass">Добавить класс</span></button>
+          </div>
+          <div id="classesGrid" class="row g-3"></div>
+        </section>
+
+        <section class="tab-panel" id="tab-students">
+          <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body row g-3 align-items-end">
+              <div class="col-md-4">
+                <label class="form-label" data-i18n="selectClass">Выберите класс</label>
+                <select id="studentsClassFilter" class="form-select"></select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" data-i18n="importExcel">Импорт из Excel</label>
+                <input id="excelFileInput" type="file" class="form-control" accept=".xlsx,.xls">
+              </div>
+              <div class="col-md-4 d-flex gap-2">
+                <button id="importExcelBtn" class="btn btn-info flex-fill"><i class="bi bi-upload"></i> <span data-i18n="import">Импорт</span></button>
+                <button id="addStudentBtn" class="btn btn-primary flex-fill"><i class="bi bi-person-plus"></i> <span data-i18n="addStudent">Добавить</span></button>
+              </div>
+            </div>
+          </div>
+          <div class="card border-0 shadow-sm">
+            <div class="table-responsive">
+              <table class="table table-hover mb-0 align-middle">
+                <thead><tr><th data-i18n="fullName">ФИО</th><th data-i18n="phone">Телефон</th><th data-i18n="className">Класс</th><th class="text-end" data-i18n="actions">Действия</th></tr></thead>
+                <tbody id="studentsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="tab-panel" id="tab-attendance">
+          <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body row g-3">
+              <div class="col-md-4">
+                <label class="form-label" data-i18n="selectClass">Выберите класс</label>
+                <select id="attendanceClassSelect" class="form-select"></select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" data-i18n="date">Дата</label>
+                <input id="attendanceDate" type="date" class="form-control">
+              </div>
+              <div class="col-md-5 d-flex align-items-end gap-2">
+                <button id="loadAttendanceBtn" class="btn btn-outline-primary"><i class="bi bi-arrow-repeat"></i> <span data-i18n="load">Загрузить</span></button>
+                <button id="saveAttendanceBtn" class="btn btn-success"><i class="bi bi-check2-circle"></i> <span data-i18n="saveAttendance">Сохранить посещаемость</span></button>
+              </div>
+            </div>
+          </div>
+          <div id="attendanceList" class="vstack gap-2"></div>
+        </section>
+
+        <section class="tab-panel" id="tab-reports">
+          <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body row g-3 align-items-end">
+              <div class="col-md-3">
+                <label class="form-label" data-i18n="fromDate">От</label>
+                <input id="reportFromDate" type="date" class="form-control">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" data-i18n="toDate">До</label>
+                <input id="reportToDate" type="date" class="form-control">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label" data-i18n="selectClass">Класс</label>
+                <select id="reportClassFilter" class="form-select"></select>
+              </div>
+              <div class="col-md-3 d-grid">
+                <button id="generateReportBtn" class="btn btn-primary"><i class="bi bi-file-earmark-bar-graph"></i> <span data-i18n="generateReport">Сформировать отчет</span></button>
+              </div>
+            </div>
+          </div>
+          <div id="reportSummary" class="row g-3 mb-3"></div>
+          <div class="card border-0 shadow-sm">
+            <div class="card-body d-flex gap-2 justify-content-end">
+              <button id="printReportBtn" class="btn btn-outline-secondary"><i class="bi bi-printer"></i> <span data-i18n="print">Печать</span></button>
+              <button id="exportReportBtn" class="btn btn-outline-primary"><i class="bi bi-download"></i> <span data-i18n="export">Экспорт CSV</span></button>
+            </div>
+            <div class="table-responsive">
+              <table class="table mb-0">
+                <thead><tr><th data-i18n="date">Дата</th><th data-i18n="className">Класс</th><th data-i18n="present">Присутствуют</th><th data-i18n="absent">Отсутствуют</th><th data-i18n="attendanceRate">Процент</th></tr></thead>
+                <tbody id="reportTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="tab-panel" id="tab-settings">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body row g-3">
+              <div class="col-md-6">
+                <label class="form-label" data-i18n="schoolName">Название школы</label>
+                <input id="schoolNameInput" class="form-control">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" data-i18n="academicYear">Учебный год</label>
+                <input id="academicYearInput" class="form-control">
+              </div>
+              <div class="col-12">
+                <button id="saveSettingsBtn" class="btn btn-success"><i class="bi bi-floppy"></i> <span data-i18n="save">Сохранить</span></button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="tab-panel" id="tab-admin">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+              <strong data-i18n="userManagement">Управление пользователями</strong>
+              <button id="addUserBtn" class="btn btn-warning btn-sm"><i class="bi bi-person-plus"></i> <span data-i18n="addUser">Добавить</span></button>
+            </div>
+            <div class="table-responsive">
+              <table class="table mb-0">
+                <thead><tr><th data-i18n="fullName">ФИО</th><th>Email</th><th data-i18n="role">Роль</th><th class="text-end" data-i18n="actions">Действия</th></tr></thead>
+                <tbody id="usersTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </main>
+    </section>
+  </div>
+
+  <div class="modal fade" id="classModal" tabindex="-1">
+    <div class="modal-dialog">
+      <form id="classForm" class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" data-i18n="classEditor">Класс</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="classIdInput">
+          <div class="mb-3">
+            <label class="form-label" data-i18n="className">Название класса</label>
+            <input id="classNameInput" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" data-i18n="classTeacher">Классный руководитель</label>
+            <input id="classTeacherInput" class="form-control">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" data-i18n="cancel">Отмена</button>
+          <button type="submit" class="btn btn-primary" data-i18n="save">Сохранить</button>
+        </div>
+      </form>
     </div>
+  </div>
 
-    <!-- Main Dashboard -->
-    <div id="dashboardPage" class="page">
-        <!-- Mobile Header -->
-        <div class="mobile-header" style="display: none;">
-            <button class="menu-toggle" onclick="toggleMobileMenu()">
-                <i class="bi bi-list"></i>
-            </button>
-            <h3>14-мактаб CRM</h3>
-            <div></div>
+  <div class="modal fade" id="studentModal" tabindex="-1">
+    <div class="modal-dialog">
+      <form id="studentForm" class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" data-i18n="studentEditor">Ученик</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-        
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="logo">
-                    <img src="https://via.placeholder.com/40x40/667EEA/FFFFFF?text=14" alt="Logo" class="logo-img">
-                    <h2>14-мактаб</h2>
-                </div>
-                <button class="mobile-menu-toggle" id="mobileMenuToggle">
-                    <i class="bi bi-x-lg"></i>
-                </button>
-            </div>
-            
-            <div class="user-profile">
-                <div class="user-avatar">
-                    <i class="bi bi-person-circle"></i>
-                </div>
-                <div class="user-info">
-                    <div class="user-name" id="sidebarUserName">Пользователь</div>
-                    <div class="user-role" id="sidebarUserRole">Роль</div>
-                </div>
-            </div>
-            
-            <!-- Language Switcher -->
-            <div class="language-switcher">
-                <div class="lang-label">Тил:</div>
-                <div class="lang-buttons">
-                    <button class="lang-btn ${currentLanguage === 'ru' ? 'active' : ''}" onclick="setLanguage('ru')">
-                        Рус
-                    </button>
-                    <button class="lang-btn ${currentLanguage === 'uz' ? 'active' : ''}" onclick="setLanguage('uz')">
-                        O'zb
-                    </button>
-                </div>
-            </div>
-            
-            <nav class="sidebar-nav">
-                <ul class="nav-list">
-                    <li class="nav-item">
-                        <a href="#" class="nav-link active" onclick="showTab('dashboard')">
-                            <i class="bi bi-house-door"></i>
-                            <span data-lang="dashboard">Главная</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link" onclick="showTab('attendance')">
-                            <i class="bi bi-calendar-check"></i>
-                            <span data-lang="attendance">Посещаемость</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link" onclick="showTab('classes')">
-                            <i class="bi bi-people"></i>
-                            <span data-lang="classes">Классы</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link" onclick="showTab('reports')">
-                            <i class="bi bi-file-text"></i>
-                            <span data-lang="reports">Отчёты</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link" onclick="showTab('settings')">
-                            <i class="bi bi-gear"></i>
-                            <span data-lang="settings">Настройки</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-            
-            <div class="sidebar-footer">
-                <button class="logout-btn" onclick="logout()">
-                    <i class="bi bi-box-arrow-right"></i>
-                    <span data-lang="logout">Выход</span>
-                </button>
-            </div>
-        </aside>
+        <div class="modal-body">
+          <input type="hidden" id="studentIdInput">
+          <div class="mb-3"><label class="form-label" data-i18n="firstName">Имя</label><input id="studentFirstNameInput" class="form-control" required></div>
+          <div class="mb-3"><label class="form-label" data-i18n="lastName">Фамилия</label><input id="studentLastNameInput" class="form-control" required></div>
+          <div class="mb-3"><label class="form-label" data-i18n="phone">Телефон</label><input id="studentPhoneInput" class="form-control"></div>
+          <div class="mb-3"><label class="form-label" data-i18n="className">Класс</label><select id="studentClassInput" class="form-select" required></select></div>
         </div>
-
-        <!-- Mobile menu toggle -->
-        <button class="mobile-menu-toggle" id="mobileMenuToggle">
-            <i class="bi bi-list"></i>
-        </button>
-
-        <!-- Main Content -->
-        <div class="main-content" id="mainContent">
-            <!-- Dashboard Tab -->
-            <div id="dashboardTab" class="tab-content active">
-                <div class="content-header">
-                    <h1 data-lang="dashboard">Главная</h1>
-                    <p>Обзор статистики посещаемости</p>
-                </div>
-
-                <div class="stats-grid">
-                    <div class="stat-card primary">
-                        <div class="stat-icon">
-                            <i class="bi bi-people-fill"></i>
-                        </div>
-                        <div class="stat-content">
-                            <h3 id="totalStudents">0</h3>
-                            <p data-lang="totalStudents">Всего учеников</p>
-                        </div>
-                    </div>
-                    <div class="stat-card success">
-                        <div class="stat-icon">
-                            <i class="bi bi-check-circle-fill"></i>
-                        </div>
-                        <div class="stat-content">
-                            <h3 id="presentToday">0</h3>
-                            <p data-lang="presentToday">Присутствуют сегодня</p>
-                        </div>
-                    </div>
-                    <div class="stat-card danger">
-                        <div class="stat-icon">
-                            <i class="bi bi-x-circle-fill"></i>
-                        </div>
-                        <div class="stat-content">
-                            <h3 id="absentToday">0</h3>
-                            <p data-lang="absentToday">Отсутствуют сегодня</p>
-                        </div>
-                    </div>
-                    <div class="stat-card info">
-                        <div class="stat-icon">
-                            <i class="bi bi-percent"></i>
-                        </div>
-                        <div class="stat-content">
-                            <h3 id="attendanceRate">0%</h3>
-                            <p data-lang="attendanceRate">Уровень посещаемости</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="dashboard-grid">
-                    <div class="chart-container">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 data-lang="attendanceChart">График посещаемости</h5>
-                            </div>
-                            <div class="card-body">
-                                <canvas id="attendanceChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="activity-container">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 data-lang="recentActivity">Последняя активность</h5>
-                            </div>
-                            <div class="card-body">
-                                <div id="recentActivityList">
-                                    <!-- Activity items will be added here -->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Attendance Tab -->
-            <div id="attendanceTab" class="tab-content">
-                <div class="content-header">
-                    <h1 data-lang="attendance">Посещаемость</h1>
-                    <p>Отметка отсутствующих учеников</p>
-                </div>
-
-                <div class="attendance-container">
-                    <div class="attendance-controls">
-                        <div class="class-selector">
-                            <label data-lang="selectClass">Выберите класс:</label>
-                            <select class="form-select" id="classSelect">
-                                <option value="">Выберите класс</option>
-                            </select>
-                        </div>
-                        <div class="attendance-date">
-                            <label data-lang="date">Дата:</label>
-                            <input type="date" class="form-control" id="attendanceDate">
-                        </div>
-                    </div>
-
-                    <div class="students-attendance">
-                        <div class="attendance-header">
-                            <h5>Список учеников</h5>
-                            <div class="attendance-summary">
-                                <span class="present-count">Присутствуют: <strong id="presentCount">0</strong></span>
-                                <span class="absent-count">Отсутствуют: <strong id="absentCount">0</strong></span>
-                            </div>
-                        </div>
-                        <div id="studentsList">
-                            <!-- Students list will be loaded here -->
-                        </div>
-                        <div class="attendance-actions">
-                            <button class="btn btn-success" onclick="saveAttendance()">
-                                <i class="bi bi-check-circle"></i> Сохранить посещаемость
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Classes Tab -->
-            <div id="classesTab" class="tab-content">
-                <div class="content-header">
-                    <h1 data-lang="classes">Классы</h1>
-                    <p>Управление классами и учениками</p>
-                    <button class="btn btn-primary" onclick="showAddClassModal()" id="addClassBtn" style="display: none;">
-                        <i class="bi bi-plus-circle"></i> <span data-lang="addClass">Добавить класс</span>
-                    </button>
-                </div>
-
-                <div class="classes-grid" id="classesList">
-                    <!-- Classes will be loaded here -->
-                </div>
-            </div>
-
-            <!-- Reports Tab -->
-            <div id="reportsTab" class="tab-content">
-                <div class="content-header">
-                    <h1 data-lang="reports">Отчёты</h1>
-                    <p>Анализ посещаемости и статистика</p>
-                </div>
-
-                <div class="reports-container">
-                    <div class="reports-filters">
-                        <div class="filter-group">
-                            <label data-lang="fromDate">От:</label>
-                            <input type="date" class="form-control" id="fromDate">
-                        </div>
-                        <div class="filter-group">
-                            <label data-lang="toDate">До:</label>
-                            <input type="date" class="form-control" id="toDate">
-                        </div>
-                        <div class="filter-group">
-                            <label data-lang="selectClass">Класс:</label>
-                            <select class="form-select" id="reportClassSelect">
-                                <option value="">Все классы</option>
-                            </select>
-                        </div>
-                        <button class="btn btn-primary" onclick="generateReport()">
-                            <i class="bi bi-file-text"></i> Сгенерировать отчёт
-                        </button>
-                    </div>
-
-                    <div id="reportResults">
-                        <!-- Report results will be shown here -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Settings Tab -->
-            <div id="settingsTab" class="tab-content">
-                <div class="content-header">
-                    <h1 data-lang="settings">Настройки</h1>
-                    <p>Управление системой</p>
-                </div>
-
-                <div class="settings-grid">
-                    <div class="settings-section">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 data-lang="importStudents">Импорт учеников</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="import-form">
-                                    <div class="mb-3">
-                                        <label data-lang="selectClass">Выберите класс:</label>
-                                        <select class="form-select" id="classImport">
-                                            <option value="">Выберите класс</option>
-                                        </select>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label data-lang="selectFile">Выберите Excel файл:</label>
-                                        <input type="file" class="form-control" id="excelFile" accept=".xlsx,.xls">
-                                    </div>
-                                    <button class="btn btn-primary" onclick="importStudents()">
-                                        <i class="bi bi-upload"></i> Импортировать
-                                    </button>
-                                    <div class="mt-3">
-                                        <small class="text-muted" data-lang="importFormat">
-                                            Формат Excel файла: Имя | Фамилия | Телефон
-                                        </small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="settings-section" id="adminSection" style="display: none;">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 data-lang="userManagement">Управление пользователями</h5>
-                            </div>
-                            <div class="card-body">
-                                <button class="btn btn-primary mb-3" onclick="showAddUserModal()">
-                                    <i class="bi bi-person-plus"></i> Добавить пользователя
-                                </button>
-                                <div id="usersList">
-                                    <!-- Users list will be loaded here -->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="settings-section" id="systemSettingsSection" style="display: none;">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 data-lang="systemSettings">Системные настройки</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <label data-lang="schoolName">Название школы:</label>
-                                    <input type="text" class="form-control" id="schoolName" value="14-мактаб">
-                                </div>
-                                <div class="mb-3">
-                                    <label data-lang="academicYear">Учебный год:</label>
-                                    <input type="text" class="form-control" id="academicYear" value="2024-2025">
-                                </div>
-                                <button class="btn btn-success" onclick="saveSettings()">
-                                    <i class="bi bi-check-circle"></i> Сохранить настройки
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" data-i18n="cancel">Отмена</button>
+          <button type="submit" class="btn btn-primary" data-i18n="save">Сохранить</button>
         </div>
+      </form>
     </div>
+  </div>
 
-    <!-- Modals -->
-    <div class="modal fade" id="classInfoModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" data-lang="classInfo">Информация о классе</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div id="classInfoContent">
-                        <!-- Class info will be loaded here -->
-                    </div>
-                </div>
-            </div>
+  <div class="modal fade" id="userRoleModal" tabindex="-1">
+    <div class="modal-dialog">
+      <form id="userRoleForm" class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" data-i18n="manageRole">Роль пользователя</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-    </div>
-
-    <!-- Add Class Modal -->
-    <div class="modal fade" id="addClassModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" data-lang="addClass">Добавить класс</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="addClassForm">
-                        <div class="mb-3">
-                            <label for="newClassName" class="form-label" data-lang="className">Название класса</label>
-                            <input type="text" class="form-control" id="newClassName" placeholder="Например: 1-А класс" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="newClassTeacher" class="form-label" data-lang="classTeacher">Классный руководитель</label>
-                            <input type="text" class="form-control" id="newClassTeacher" placeholder="ФИО классного руководителя">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="button" class="btn btn-primary" onclick="addClass()">Добавить</button>
-                </div>
-            </div>
+        <div class="modal-body">
+          <input type="hidden" id="userRoleUidInput">
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input id="userRoleEmailInput" class="form-control" type="email" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" data-i18n="role">Роль</label>
+            <select id="userRoleSelect" class="form-select" required>
+              <option value="teacher" data-i18n="roleTeacher">Учитель</option>
+              <option value="school_admin" data-i18n="roleSchoolAdmin">Администрация школы</option>
+              <option value="super_admin" data-i18n="roleSuperAdmin">Супер админ</option>
+            </select>
+          </div>
+          <div class="alert alert-info small mb-0" data-i18n="inviteHint">Пользователь сможет войти по magic-link на указанный email.</div>
         </div>
-    </div>
-
-    <!-- Edit Class Modal -->
-    <div class="modal fade" id="editClassModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" data-lang="editClass">Изменить класс</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="editClassForm">
-                        <input type="hidden" id="editClassId">
-                        <div class="mb-3">
-                            <label for="editClassName" class="form-label" data-lang="className">Название класса</label>
-                            <input type="text" class="form-control" id="editClassName" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editClassTeacher" class="form-label" data-lang="classTeacher">Классный руководитель</label>
-                            <input type="text" class="form-control" id="editClassTeacher">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="button" class="btn btn-primary" onclick="updateClass()">Сохранить</button>
-                </div>
-            </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" data-i18n="cancel">Отмена</button>
+          <button type="submit" class="btn btn-primary" data-i18n="save">Сохранить</button>
         </div>
+      </form>
     </div>
+  </div>
 
-    <!-- Add User Modal -->
-    <div class="modal fade" id="addUserModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" data-lang="addUser">Добавить пользователя</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="addUserForm">
-                        <div class="mb-3">
-                            <label for="newUserName" class="form-label" data-lang="fullName">Полное имя</label>
-                            <input type="text" class="form-control" id="newUserName" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="newUserEmail" class="form-label" data-lang="email">Электронная почта</label>
-                            <input type="email" class="form-control" id="newUserEmail" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="newUserPassword" class="form-label" data-lang="password">Пароль</label>
-                            <input type="password" class="form-control" id="newUserPassword" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="newUserRole" class="form-label" data-lang="role">Роль</label>
-                            <select class="form-select" id="newUserRole">
-                                <option value="teacher" data-lang="teacher">Учитель</option>
-                                <option value="school_admin" data-lang="school_admin">Администрация школы</option>
-                                <option value="super_admin" data-lang="super_admin">Супер администратор</option>
-                            </select>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="button" class="btn btn-primary" onclick="addUser()">Добавить</button>
-                </div>
-            </div>
-        </div>
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="appToast" class="toast align-items-center text-bg-dark border-0" role="alert">
+      <div class="d-flex">
+        <div class="toast-body" id="appToastMessage">Message</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
     </div>
+  </div>
 
-    <!-- Toast Notification -->
-    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
-        <div id="liveToast" class="toast" role="alert">
-            <div class="toast-header">
-                <strong class="me-auto" id="toastTitle">Уведомление</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
-            </div>
-            <div class="toast-body" id="toastMessage">
-                Сообщение
-            </div>
-        </div>
-    </div>
-
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="./app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="./app.js"></script>
 </body>
 </html>
